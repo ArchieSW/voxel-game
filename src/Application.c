@@ -8,6 +8,7 @@
 #include "Renderer.h"
 #include "Camera.h"
 #include "Primitives.h"
+#include "Block.h"
 
 static bool application_initialized = false;
 static int init_application() {
@@ -45,11 +46,11 @@ Application* create_application(int width, int height, const char* title) {
     app->window = window;
     app->is_running = true;
 
-    #define SEED 3000
+    #define SEED 3500
 
     fnl_state state = fnlCreateState();
     state.noise_type = FNL_NOISE_PERLIN;
-    state.seed = SEED;
+    state.seed = time(NULL);
 
     #define LANDSCAPE_WIDTH 256
     #define LANDSCAPE_HEIGHT 256
@@ -71,7 +72,6 @@ Application* create_application(int width, int height, const char* title) {
         }
     }
 
-
     Renderer* renderer = init_renderer();
 
     Cube cube;
@@ -91,6 +91,34 @@ Application* create_application(int width, int height, const char* title) {
     }
     free(tmp);
 
+    VertexArray* va = create_vertex_array(4);
+    Vertex v;
+
+    v.color[0] = 0.0f; v.color[1] = 1.0f; v.color[2] = 0.0f;
+    v.position[0] = -BLOCK_SIZE; v.position[1] = -BLOCK_SIZE; v.position[2] = 0.0f;
+    v.normal[0] = 0.0f; v.normal[1] = 0.0f; v.normal[2] = -1.0f;
+    push_vertex(va, v);
+
+    v.position[0] = -BLOCK_SIZE; v.position[1] = BLOCK_SIZE; v.position[2] = 0.0f;
+    push_vertex(va, v);
+
+    v.position[0] = BLOCK_SIZE; v.position[1] = BLOCK_SIZE; v.position[2] = 0.0f;
+    push_vertex(va, v);
+
+    v.position[0] = BLOCK_SIZE; v.position[1] = -BLOCK_SIZE; v.position[2] = 0.0f;
+    push_vertex(va, v);
+
+    IndexArray* ia = create_index_array(6);
+    push_index(ia, 0);
+    push_index(ia, 1);
+    push_index(ia, 2);
+    push_index(ia, 2);
+    push_index(ia, 3);
+    push_index(ia, 0);
+
+    Mesh* mesh = create_mesh(va, ia);
+    renderer->mesh = mesh;
+    print_mesh_info(mesh);
     app->renderer = renderer;
 
     return app;
@@ -163,7 +191,20 @@ void render(Application* app) {
     mat4 projection = GLM_MAT4_IDENTITY_INIT;
     glm_perspective(glm_rad(45.0f), (float)app->window->width/(float)app->window->height, 0.1f, 1000.0f, projection);
 
+    // use_shader(app->renderer->shaders[0]);
+    // set_uniform(app->renderer->shaders[0], "view", UT_MAT4, view);
+    // set_uniform(app->renderer->shaders[0], "projection", UT_MAT4, projection);
+
+    // set_uniform(app->renderer->shaders[0], "light_color", UT_VEC3, app->renderer->light_object->color);
+    // set_uniform(app->renderer->shaders[0], "light_position", UT_VEC3, app->renderer->light_object->position);
+    // set_uniform(app->renderer->shaders[0], "camera_position", UT_VEC3, app->renderer->camera->position);
+
+    // draw_cubes(app->renderer->cubes, app->renderer->shaders[0]);
+
     use_shader(app->renderer->shaders[0]);
+    vec3 color; 
+    glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, color);
+    set_uniform(app->renderer->shaders[0], "color", UT_VEC3, color);
     set_uniform(app->renderer->shaders[0], "view", UT_MAT4, view);
     set_uniform(app->renderer->shaders[0], "projection", UT_MAT4, projection);
 
@@ -171,7 +212,11 @@ void render(Application* app) {
     set_uniform(app->renderer->shaders[0], "light_position", UT_VEC3, app->renderer->light_object->position);
     set_uniform(app->renderer->shaders[0], "camera_position", UT_VEC3, app->renderer->camera->position);
 
-    draw_cubes(app->renderer->cubes, app->renderer->shaders[0]);
+    mat4 model = GLM_MAT4_IDENTITY_INIT;
+    set_uniform(app->renderer->shaders[0], "model", UT_MAT4, model);
+
+    draw_mesh(app->renderer->mesh);
+
 
     use_shader(app->renderer->shaders[1]);
     set_uniform(app->renderer->shaders[1], "view", UT_MAT4, view);
@@ -195,6 +240,7 @@ void delete_application(Application* app) {
     delete_shader(app->renderer->shaders[1]);
     delete_camera(app->renderer->camera);
     delete_cube_array(app->renderer->cubes);
+    delete_mesh(app->renderer->mesh);
     delete_light_object(app->renderer->light_object);
 
 

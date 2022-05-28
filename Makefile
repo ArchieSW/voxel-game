@@ -1,6 +1,6 @@
 CC=gcc
 DEPS=./src/Application.c ./src/Camera.c ./src/Renderer.c ./src/Shader.c ./src/Window.c ./src/LightObject.c ./src/Primitives.c ./Dependencies/src/glad.c ./Dependencies/src/FastNoiseLite.c
-HEADERS=./src/Application.h ./src/Camera.h ./src/Renderer.h ./src/Shader.h ./src/Window.h ./src/LightObject.h ./src/Primitives.h
+HEADERS=./src/Application.h ./src/Camera.h ./src/Renderer.h ./src/Shader.h ./src/Window.h ./src/LightObject.h ./src/Primitives.h ./src/Block.h
 INCLUDE=-I./Dependencies/include/
 MAIN=./src/main.c
 
