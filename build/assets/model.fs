@@ -2,16 +2,17 @@
 
 uniform vec3 light_color;
 uniform vec3 light_position;
-uniform vec3 color;
 
 uniform vec3 camera_position;
 
 in vec3 object_normal;
 in vec3 fragment_position;
+in vec3 object_color;
 
 out vec4 FragmentColor;
 
 void main() {
+    vec3 color = object_color;
     float ambientStrength = 0.1f;
     vec3 ambient = ambientStrength * light_color;
 
