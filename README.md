@@ -16,5 +16,6 @@ make
 
 ## Using:
 ```bash
-./build/main.o
+cd build
+./main.o
 ```
